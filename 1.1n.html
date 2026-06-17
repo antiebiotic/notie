@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Ant's Docs • 카카오톡</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Pretendard', 'Noto Sans KR', -apple-system, sans-serif;
+      background: #F5F5F5;
+      transition: background 0.3s;
+    }
+    body.oled { background: #000000; }
+
+    .app {
+      width: 100%; height: 100%; display: flex;
+      background: #F5F5F5; transition: background 0.3s;
+    }
+    body.oled .app { background: #000000; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 100%; height: 100%; display: flex; flex-direction: column;
+      background: #F5F5F5; flex-shrink: 0;
+    }
+    @media (min-width: 720px) {
+      .sidebar { width: 360px; border-right: 1px solid #E5E5EA; }
+      body.oled .sidebar { border-color: #1C1C1E; background: #000000; }
+    }
+
+    .sidebar-header {
+      padding: 20px 20px 10px; display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .sidebar-header h1 {
+      font-size: 22px; font-weight: 700; color: #000000; letter-spacing: -0.3px;
+    }
+    body.oled .sidebar-header h1 { color: #FFFFFF; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .save-indicator {
+      font-size: 11px; color: #8E8E93; display: flex; align-items: center; gap: 4px;
+      margin-right: 8px;
+    }
+    body.oled .save-indicator { color: #8E8E93; }
+    .save-dot { width: 5px; height: 5px; border-radius: 50%; background: #D1D1D6; transition: background 0.2s; }
+    .save-dot.saved { background: #FAE100; }
+    .icon-btn {
+      background: none; border: none; padding: 8px; border-radius: 50%; cursor: pointer;
+      color: #000000; display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s;
+    }
+    .icon-btn:hover { background: #E5E5EA; }
+    body.oled .icon-btn { color: #FFFFFF; }
+    body.oled .icon-btn:hover { background: #1C1C1E; }
+    .icon-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .search-wrap { padding: 4px 16px 8px; flex-shrink: 0; }
+    .search-input {
+      width: 100%; padding: 10px 16px; border-radius: 20px; border: none;
+      background: #E5E5EA; font-size: 14px; font-family: inherit; color: #000000; outline: none;
+    }
+    .search-input::placeholder { color: #8E8E93; }
+    body.oled .search-input { background: #1C1C1E; color: #FFFFFF; }
+
+    .filter-tabs {
+      display: flex; gap: 6px; padding: 4px 16px 10px; flex-shrink: 0; flex-wrap: wrap;
+    }
+    .filter-tab {
+      padding: 7px 16px; border-radius: 18px; border: 1px solid #D1D1D6;
+      background: #FFFFFF; font-size: 13px; font-weight: 600; cursor: pointer;
+      color: #000000; transition: all 0.12s; white-space: nowrap;
+    }
+    .filter-tab.active { background: #000000; color: #FFFFFF; border-color: #000000; }
+    body.oled .filter-tab { background: #1C1C1E; color: #8E8E93; border-color: #3A3A3C; }
+    body.oled .filter-tab.active { background: #FFFFFF; color: #000000; border-color: #FFFFFF; }
+    .filter-tab .delete-filter { margin-left: 6px; font-size: 11px; opacity: 0.5; cursor: pointer; }
+    .filter-tab .delete-filter:hover { opacity: 1; }
+    .add-filter-btn {
+      padding: 7px 12px; border-radius: 18px; border: 1px dashed #D1D1D6;
+      background: transparent; font-size: 13px; font-weight: 600; cursor: pointer;
+      color: #8E8E93; transition: all 0.12s; white-space: nowrap;
+    }
+    .add-filter-btn:hover { border-color: #FAE100; color: #000000; }
+    body.oled .add-filter-btn { border-color: #3A3A3C; }
+    body.oled .add-filter-btn:hover { border-color: #FAE100; color: #FFFFFF; }
+
+    .note-list { flex: 1; overflow-y: auto; padding: 0 12px; }
+    .note-list::-webkit-scrollbar { width: 3px; }
+    .note-list::-webkit-scrollbar-thumb { background: #D1D1D6; border-radius: 4px; }
+    body.oled .note-list::-webkit-scrollbar-thumb { background: #3A3A3C; }
+
+    .note-row {
+      display: flex; align-items: center; gap: 14px; padding: 14px 12px; border-radius: 18px;
+      cursor: pointer; transition: background 0.1s;
+    }
+    .note-row:hover { background: #E5E5EA; }
+    .note-row.active { background: #FFFFFF; }
+    body.oled .note-row:hover { background: #1C1C1E; }
+    body.oled .note-row.active { background: #1A1A00; }
+
+    .note-avatar { width: 50px; height: 50px; flex-shrink: 0; position: relative; border-radius: 14px; overflow: hidden; }
+    .note-avatar svg { width: 50px; height: 50px; display: block; }
+    .note-avatar img { width: 50px; height: 50px; object-fit: cover; display: block; }
+    .note-avatar .avatar-text {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 17px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.5px; user-select: none;
+    }
+    .note-body { flex: 1; min-width: 0; }
+    .note-title {
+      font-size: 15px; font-weight: 600; color: #000000; line-height: 1.3;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    body.oled .note-title { color: #FFFFFF; }
+    .note-preview {
+      font-size: 12px; color: #8E8E93; line-height: 1.3; margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .note-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .note-time { font-size: 10px; color: #8E8E93; white-space: nowrap; }
+    .note-delete {
+      background: none; border: none; cursor: pointer; color: #C7C7CC; font-size: 12px;
+      padding: 2px 6px; border-radius: 8px; opacity: 0; transition: opacity 0.12s, color 0.12s;
+    }
+    .note-row:hover .note-delete { opacity: 1; }
+    .note-delete:hover { color: #FF3B30; }
+
+    .empty-list { flex: 1; display: flex; align-items: center; justify-content: center; color: #8E8E93; font-size: 14px; padding: 40px; }
+    .new-note-btn {
+      margin: 4px 14px 16px; padding: 13px; border: 1.5px dashed #D1D1D6; border-radius: 16px;
+      text-align: center; color: #8E8E93; font-size: 14px; font-weight: 500; cursor: pointer;
+      background: transparent; flex-shrink: 0; transition: all 0.12s;
+    }
+    .new-note-btn:hover { border-color: #FAE100; color: #000000; }
+    body.oled .new-note-btn { border-color: #3A3A3C; }
+    body.oled .new-note-btn:hover { border-color: #FAE100; color: #FFFFFF; }
+
+    /* ── Main Panel ── */
+    .main-panel {
+      display: none; flex: 1; height: 100%; flex-direction: column;
+      background: #6c9fcd; transition: background 0.3s;
+    }
+    @media (min-width: 720px) {
+      .main-panel { display: flex; }
+      .main-panel .empty-panel { display: flex; }
+    }
+    .main-panel.mobile-open {
+      display: flex; position: absolute; inset: 0; z-index: 10;
+      animation: kakaoSlideIn 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+    }
+    @keyframes kakaoSlideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    .main-panel.mobile-closing { animation: kakaoSlideOut 0.25s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards; }
+    @keyframes kakaoSlideOut { from { transform: translateX(0); } to { transform: translateX(100%); } }
+    body.oled .main-panel { background: #1C1C1E; }
+
+    .panel-header {
+      padding: 18px 20px 12px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.15); flex-shrink: 0;
+    }
+    body.oled .panel-header { border-color: rgba(255,255,255,0.08); }
+    .back-btn {
+      background: none; border: none; cursor: pointer; color: #FFFFFF; padding: 6px 10px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s; line-height: 1;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.15); }
+    @media (min-width: 720px) { .back-btn { display: none; } }
+    .back-btn svg { width: 24px; height: 24px; stroke: #FFFFFF; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .panel-title { font-size: 16px; font-weight: 600; color: #FFFFFF; flex: 1; }
+
+    .panel-content { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+
+    .image-gallery {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .image-thumb {
+      position: relative; width: 100px; height: 100px; border-radius: 12px;
+      overflow: hidden; background: rgba(255,255,255,0.15); flex-shrink: 0;
+    }
+    .image-thumb img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+    .image-thumb .remove-img {
+      position: absolute; top: 4px; right: 4px; width: 22px; height: 22px;
+      background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%;
+      font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+
+    .panel-textarea {
+      width: 100%; flex: 1; min-height: 100px; background: transparent; border: none; outline: none;
+      font-size: 15px; font-family: inherit; color: #FFFFFF; resize: none; line-height: 1.7;
+    }
+    .panel-textarea::placeholder { color: rgba(255,255,255,0.5); }
+
+    .panel-footer {
+      padding: 10px 20px 18px; border-top: 1px solid rgba(255,255,255,0.15); flex-shrink: 0;
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    }
+    body.oled .panel-footer { border-color: rgba(255,255,255,0.08); }
+    .tag-chips { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
+    .tag-chip {
+      padding: 4px 10px; border-radius: 12px; background: rgba(255,255,255,0.2);
+      color: #FFFFFF; font-size: 11px; font-weight: 500; cursor: pointer;
+      display: flex; align-items: center; gap: 4px; transition: background 0.12s;
+    }
+    .tag-chip:hover { background: rgba(255,255,255,0.35); }
+    .tag-chip .remove-tag { font-size: 12px; opacity: 0.6; cursor: pointer; }
+    .tag-chip .remove-tag:hover { opacity: 1; }
+    .add-tag-btn {
+      padding: 4px 10px; border-radius: 12px; background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7); font-size: 11px; font-weight: 500; cursor: pointer;
+      border: 1px dashed rgba(255,255,255,0.3); transition: all 0.12s;
+    }
+    .add-tag-btn:hover { background: rgba(255,255,255,0.2); color: #FFFFFF; }
+
+    .btn {
+      border: none; border-radius: 18px; padding: 10px 18px; font-weight: 700; font-size: 13px;
+      cursor: pointer; background: #FAE100; color: #000000; white-space: nowrap; transition: opacity 0.12s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn.ghost { background: rgba(255,255,255,0.15); color: #FFFFFF; }
+    .empty-panel {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.6); gap: 10px; font-size: 14px;
+    }
+    .empty-panel svg { width: 40px; height: 40px; stroke: rgba(255,255,255,0.6); fill: none; stroke-width: 1.5; stroke-linecap: round; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: flex;
+      align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal {
+      background: #FFFFFF; border-radius: 22px; padding: 22px; width: 90%; max-width: 360px; position: relative;
+    }
+    body.oled .modal { background: #1C1C1E; }
+    .modal h2 { font-size: 17px; font-weight: 700; color: #000000; margin-bottom: 16px; }
+    body.oled .modal h2 { color: #FFFFFF; }
+    .setting-row {
+      display: flex; align-items: center; justify-content: space-between; padding: 10px 0;
+      border-bottom: 1px solid #E5E5EA;
+    }
+    body.oled .setting-row { border-color: #3A3A3C; }
+    .setting-label { font-size: 14px; color: #000000; display: flex; align-items: center; gap: 8px; }
+    body.oled .setting-label { color: #FFFFFF; }
+    .setting-icon { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.6; }
+    .toggle-group { display: flex; gap: 4px; }
+    .toggle-btn {
+      padding: 7px 14px; border-radius: 16px; border: 1.5px solid #D1D1D6;
+      background: transparent; font-size: 12px; font-weight: 600; cursor: pointer; color: #8E8E93;
+      transition: all 0.12s;
+    }
+    .toggle-btn.active { background: #000000; color: #FFFFFF; border-color: #000000; }
+    body.oled .toggle-btn { border-color: #3A3A3C; }
+    body.oled .toggle-btn.active { background: #FFFFFF; color: #000000; border-color: #FFFFFF; }
+    .json-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .json-actions .btn { flex: 1; text-align: center; font-size: 12px; padding: 8px; background: transparent; border: 1.5px solid #D1D1D6; color: #000000; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    body.oled .json-actions .btn { border-color: #3A3A3C; color: #FFFFFF; }
+    .json-actions .btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+    .ref-display {
+      background: #F2F2F7; border-radius: 12px; padding: 10px 14px; margin-top: 10px;
+      text-align: center; font-size: 12px; color: #000000;
+    }
+    body.oled .ref-display { background: #0A0A0A; color: #FFFFFF; }
+    .ref-display strong { letter-spacing: 3px; font-family: 'SF Mono', monospace; }
+    .modal-close {
+      position: absolute; top: 12px; right: 12px; background: none; border: none;
+      cursor: pointer; color: #8E8E93; padding: 6px; border-radius: 50%;
+    }
+    .modal-close:hover { background: #E5E5EA; }
+    body.oled .modal-close:hover { background: #3A3A3C; }
+    .modal-close svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+    .credit {
+      text-align: center; font-size: 10px; color: #8E8E93; margin-top: 14px; opacity: 0.6; font-weight: 300; line-height: 1.6;
+    }
+    .toast {
+      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+      background: #000000; color: #FFFFFF; padding: 10px 22px; border-radius: 18px;
+      font-size: 12px; font-weight: 600; z-index: 300; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+
+    .lightbox {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200;
+      display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .lightbox.open { opacity: 1; pointer-events: auto; }
+    .lightbox img { max-width: 95%; max-height: 95%; border-radius: 12px; }
+    .lightbox-close {
+      position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.15);
+      color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%;
+      font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1 id="appTitle">Ant's Docs</h1>
+      <div class="header-actions">
+        <div class="save-indicator"><span class="save-dot saved" id="saveDot"></span><span id="saveLabel">저장됨</span></div>
+        <button class="icon-btn" id="settingsBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+      </div>
+    </div>
+    <div class="search-wrap"><input class="search-input" id="searchInput" placeholder="문서 검색"></div>
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" data-filter="all">전체</button>
+      <button class="filter-tab" data-filter="pinned">고정</button>
+      <button class="filter-tab" data-filter="images">이미지</button>
+      <button class="add-filter-btn" id="addFilterBtn">+</button>
+    </div>
+    <div class="note-list" id="noteList"></div>
+    <button class="new-note-btn" id="newNoteBtn">+ <span id="newNoteLabel">새 문서</span></button>
+  </div>
+
+  <div class="main-panel" id="mainPanel">
+    <div class="panel-header">
+      <button class="back-btn" id="backBtn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <span class="panel-title" id="panelTitle">문서</span>
+      <button class="icon-btn" id="imageUploadBtn" style="color:#FFFFFF;" title="이미지 추가"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
+      <button class="icon-btn" id="shareBtn" style="color:#FFFFFF;"><svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>
+      <button class="icon-btn" id="deleteBtn" style="color:#FFFFFF;"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+    </div>
+    <div class="panel-content" id="panelContent">
+      <div class="image-gallery" id="imageGallery"></div>
+      <textarea class="panel-textarea" id="editor" placeholder="내용을 입력하세요..."></textarea>
+    </div>
+    <div class="panel-footer">
+      <div class="tag-chips" id="tagChips"></div>
+      <button class="add-tag-btn" id="addTagToNoteBtn">+ 태그</button>
+      <span style="flex:1;"></span>
+      <span style="font-size:11px;color:rgba(255,255,255,0.6);" id="editorTime"></span>
+      <button class="btn" id="saveBtn">저장</button>
+    </div>
+    <div class="empty-panel" id="emptyPanel">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span id="emptyText">문서를 선택하세요</span>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="settingsOverlay">
+    <div class="modal">
+      <button class="modal-close" id="closeSettings"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      <h2 id="settingsTitle">설정</h2>
+      <div class="setting-row">
+        <span class="setting-label"><svg class="setting-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg><span id="themeLabel">테마</span></span>
+        <div class="toggle-group" id="themeToggle">
+          <button class="toggle-btn active" data-theme="light">라이트</button>
+          <button class="toggle-btn" data-theme="oled">OLED</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label"><svg class="setting-icon" viewBox="0 0 24 24"><path d="M12 2l7 5v10l-7 5-7-5V7z"/><circle cx="12" cy="12" r="3"/></svg><span id="langLabel">언어</span></span>
+        <div class="toggle-group" id="langToggle">
+          <button class="toggle-btn active" data-lang="ko">한국어</button>
+          <button class="toggle-btn" data-lang="en">English</button>
+        </div>
+      </div>
+      <div class="ref-display"><span id="refLabel">내 참조 코드</span>: <strong id="refCodeDisplay"></strong></div>
+      <div class="json-actions">
+        <button class="btn" id="exportBtn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span id="exportLabel">카톡으로 내보내기</span></button>
+        <button class="btn" id="importBtn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span id="importLabel">가져오기</span></button>
+      </div>
+      <div class="credit">Created by Antibiotic<br>Made in New York<br>Packaged in Korea<br>서울특별시 강남구 테헤란로 427, 06159</div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">✕</button>
+    <img id="lightboxImg" src="" alt="">
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <input type="file" id="importFile" accept=".json" style="display:none;">
+  <input type="file" id="imageFileInput" accept="image/*" multiple style="display:none;">
+</div>
+
+<script>
+(() => {
+  const SK = 'ants_docs_v3', SETK = 'ants_docs_settings', REFK = 'ants_docs_ref', TAGS_KEY = 'ants_docs_tags';
+  const noteList = document.getElementById('noteList'), mainPanel = document.getElementById('mainPanel');
+  const panelContent = document.getElementById('panelContent');
+  const editor = document.getElementById('editor'), editorTime = document.getElementById('editorTime');
+  const saveBtn = document.getElementById('saveBtn'), shareBtn = document.getElementById('shareBtn'), deleteBtn = document.getElementById('deleteBtn');
+  const backBtn = document.getElementById('backBtn'), emptyPanel = document.getElementById('emptyPanel');
+  const saveDot = document.getElementById('saveDot'), saveLabel = document.getElementById('saveLabel');
+  const settingsBtn = document.getElementById('settingsBtn'), settingsOverlay = document.getElementById('settingsOverlay');
+  const closeSettings = document.getElementById('closeSettings'), exportBtn = document.getElementById('exportBtn');
+  const importBtn = document.getElementById('importBtn'), importFile = document.getElementById('importFile');
+  const toast = document.getElementById('toast'), themeToggle = document.getElementById('themeToggle');
+  const langToggle = document.getElementById('langToggle'), newNoteBtn = document.getElementById('newNoteBtn');
+  const refCodeDisplay = document.getElementById('refCodeDisplay');
+  const searchInput = document.getElementById('searchInput');
+  const filterTabsContainer = document.getElementById('filterTabs');
+  const addFilterBtn = document.getElementById('addFilterBtn');
+  const tagChipsContainer = document.getElementById('tagChips');
+  const addTagToNoteBtn = document.getElementById('addTagToNoteBtn');
+  const imageUploadBtn = document.getElementById('imageUploadBtn');
+  const imageFileInput = document.getElementById('imageFileInput');
+  const imageGallery = document.getElementById('imageGallery');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxClose = document.getElementById('lightboxClose');
+
+  let notes = [], currentId = null, autoTimer = null, settings = { theme: 'light', lang: 'ko' }, refCode = null;
+  let activeFilter = 'all', customTags = [], currentImages = [];
+
+  const colors = ['#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#DDA0DD','#F0C060','#FF8A5C','#6C5CE7'];
+  function avatarColor(id) { return colors[(id || 'a').charCodeAt(0) % colors.length]; }
+  function initials(text) { const w = (text || '문서').trim().split(/\s+/); return w.length >= 2 ? (w[0][0] + w[1][0]).toUpperCase() : (w[0]?.[0] || 'A').toUpperCase(); }
+  function getTitle(text) { return (text || '').split('\n')[0].substring(0, 35) || '제목 없음'; }
+  function getPreview(text) { const lines = (text || '').split('\n'); return lines.length > 1 ? lines[1].substring(0, 35) : ''; }
+
+  function squirclePath(w, h, r) { return `M${r},0 h${w-2*r} q${r},0 ${r},${r} v${h-2*r} q0,${r} -${r},${r} h-${w-2*r} q-${r},0 -${r},-${r} v-${h-2*r} q0,-${r} ${r},-${r} z`; }
+  function avatarHTML(id, text, images) {
+    if (images && images.length > 0) return `<img src="${images[0]}" alt="">`;
+    return `<svg viewBox="0 0 50 50"><path d="${squirclePath(50,50,14)}" fill="${avatarColor(id)}"/></svg><span class="avatar-text">${initials(text)}</span>`;
+  }
+
+  const i18n = {
+    ko: { title:"Ant's Docs",saved:'저장됨',newNote:'새 문서',placeholder:'내용을 입력하세요...',save:'저장',share:'공유',delete:'삭제',memo:'문서',settings:'설정',theme:'테마',lang:'언어',export:'카톡으로 내보내기',import:'가져오기',noNotes:'문서가 없습니다',deleteConfirm:'이 문서를 삭제할까요?',exported:'카카오톡으로 전송됩니다',imported:'가져오기 완료',copyToast:'복사됨 — 카카오톡에 붙여넣으세요',shareFail:'공유 실패',noShare:'공유할 내용이 없습니다',savedToast:'저장됨',refLabel:'내 참조 코드',refCreated:'새 코드 생성',refLoaded:'문서 불러옴',copiedRef:'코드 복사됨',selectNote:'문서를 선택하세요',search:'문서 검색',filterAll:'전체',filterPinned:'고정',filterImages:'이미지',addTag:'새 태그 이름',addTagToNote:'태그 추가',noTags:'태그 없음',imageAdded:'이미지 추가됨',imageRemoved:'이미지 삭제됨',storageFull:'저장 공간이 부족합니다' },
+    en: { title:"Ant's Docs",saved:'Saved',newNote:'New Doc',placeholder:'Type something...',save:'Save',share:'Share',delete:'Delete',memo:'Document',settings:'Settings',theme:'Theme',lang:'Language',export:'Export to KakaoTalk',import:'Import',noNotes:'No documents',deleteConfirm:'Delete this document?',exported:'Sending to KakaoTalk...',imported:'Imported',copyToast:'Copied — paste into KakaoTalk',shareFail:'Share failed',noShare:'Nothing to share',savedToast:'Saved',refLabel:'Reference Code',refCreated:'New code created',refLoaded:'Documents loaded',copiedRef:'Code copied',selectNote:'Select a document',search:'Search docs',filterAll:'All',filterPinned:'Pinned',filterImages:'Images',addTag:'New tag name',addTagToNote:'Add tag',noTags:'No tags',imageAdded:'Image added',imageRemoved:'Image removed',storageFull:'Storage full' }
+  };
+  function t(k) { return i18n[settings.lang]?.[k] || i18n.ko[k] || k; }
+
+  function genRef() { const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let r = ''; for (let i = 0; i < 8; i++) r += c[Math.floor(Math.random() * c.length)]; return r; }
+  function sk() { return SK + '_' + (refCode || ''); }
+  function saveCloud(show = true) {
+    if (!refCode) return;
+    try { localStorage.setItem(sk(), JSON.stringify(notes)); localStorage.setItem(REFK, refCode); localStorage.setItem(TAGS_KEY, JSON.stringify(customTags)); }
+    catch(e) { showToast(t('storageFull')); return; }
+    if (show) { saveDot.classList.add('saved'); saveLabel.textContent = t('saved'); setTimeout(() => { saveDot.classList.remove('saved'); saveLabel.textContent = t('saved'); }, 1500); }
+  }
+  function loadCloud(ref) { try { const d = localStorage.getItem(SK + '_' + ref); if (d) { notes = JSON.parse(d); return true; } } catch (e) {} return false; }
+  function loadTags() { try { customTags = JSON.parse(localStorage.getItem(TAGS_KEY)) || []; } catch { customTags = []; } }
+
+  function loadSettings() { try { settings = JSON.parse(localStorage.getItem(SETK)) || { theme: 'light', lang: 'ko' }; } catch { settings = { theme: 'light', lang: 'ko' }; } }
+  function saveSettings() { localStorage.setItem(SETK, JSON.stringify(settings)); }
+  function applyUI() {
+    document.body.className = settings.theme === 'oled' ? 'oled' : '';
+    document.getElementById('appTitle').textContent = t('title');
+    saveLabel.textContent = t('saved'); saveBtn.textContent = t('save');
+    editor.placeholder = t('placeholder');
+    document.getElementById('panelTitle').textContent = t('memo');
+    document.getElementById('settingsTitle').textContent = t('settings');
+    document.getElementById('themeLabel').textContent = t('theme');
+    document.getElementById('langLabel').textContent = t('lang');
+    document.getElementById('exportLabel').textContent = t('export');
+    document.getElementById('importLabel').textContent = t('import');
+    document.getElementById('refLabel').textContent = t('refLabel');
+    document.getElementById('newNoteLabel').textContent = t('newNote');
+    document.getElementById('emptyText').textContent = t('selectNote');
+    searchInput.placeholder = t('search');
+    document.querySelectorAll('#themeToggle .toggle-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === settings.theme));
+    document.querySelectorAll('#langToggle .toggle-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === settings.lang));
+    const filterTabs = filterTabsContainer.querySelectorAll('.filter-tab');
+    filterTabs.forEach(b => { if (b.dataset.filter === 'all') b.textContent = t('filterAll'); else if (b.dataset.filter === 'pinned') b.textContent = t('filterPinned'); else if (b.dataset.filter === 'images') b.textContent = t('filterImages'); });
+    if (refCode) refCodeDisplay.textContent = refCode;
+    renderFilterTabs(); renderTagChips();
+  }
+
+  function showToast(m, d = 2000) { toast.textContent = m; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), d); }
+  function fmtTime(ts) { const d = new Date(ts), n = new Date(); const h = String(d.getHours()).padStart(2, '0'), m = String(d.getMinutes()).padStart(2, '0'); return d.toDateString() === n.toDateString() ? (settings.lang === 'ko' ? `오늘 ${h}:${m}` : `Today ${h}:${m}`) : `${d.getMonth() + 1}/${d.getDate()} ${h}:${m}`; }
+  function esc(s) { return s.replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  function compressImage(file, maxW=800) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w=img.width, h=img.height;
+          if(w>maxW){ h=Math.round(h*(maxW/w)); w=maxW; }
+          canvas.width=w; canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          resolve(canvas.toDataURL('image/jpeg',0.7));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleImageUpload(files) {
+    if (!currentId) { const nn = { id:'n'+Date.now(), text:'', time:Date.now(), pinned:false, tags:[], images:[] }; notes.push(nn); currentId = nn.id; }
+    for (const file of files) {
+      try {
+        const dataUrl = await compressImage(file);
+        currentImages.push(dataUrl);
+      } catch(e) { showToast('Image load failed'); }
+    }
+    renderImageGallery();
+    saveCurrentSilent();
+    showToast(t('imageAdded'));
+  }
+
+  function renderImageGallery() {
+    if (!currentImages.length) { imageGallery.innerHTML = ''; return; }
+    imageGallery.innerHTML = currentImages.map((img, i) => `
+      <div class="image-thumb">
+        <img src="${img}" alt="" data-index="${i}">
+        <button class="remove-img" data-index="${i}">✕</button>
+      </div>`).join('');
+  }
+
+  function renderFilterTabs() {
+    const oldCustom = filterTabsContainer.querySelectorAll('.custom-tag');
+    oldCustom.forEach(b => b.remove());
+    customTags.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-tab custom-tag' + (activeFilter === tag ? ' active' : '');
+      btn.dataset.filter = tag;
+      btn.innerHTML = `${esc(tag)}<span class="delete-filter" data-tag="${esc(tag)}">×</span>`;
+      filterTabsContainer.insertBefore(btn, addFilterBtn);
+    });
+  }
+
+  function renderTagChips() {
+    if (!currentId) { tagChipsContainer.innerHTML = ''; return; }
+    const note = notes.find(n => n.id === currentId);
+    if (!note || !note.tags || !note.tags.length) {
+      tagChipsContainer.innerHTML = `<span style="font-size:11px;color:rgba(255,255,255,0.5);">${t('noTags')}</span>`;
+      return;
+    }
+    tagChipsContainer.innerHTML = note.tags.map(tag => `<span class="tag-chip">${esc(tag)}<span class="remove-tag" data-tag="${esc(tag)}">×</span></span>`).join('');
+  }
+
+  function filtered() {
+    let f = [...notes];
+    const q = (searchInput.value || '').toLowerCase();
+    if (q) f = f.filter(n => n.text.toLowerCase().includes(q));
+    if (activeFilter === 'pinned') f = f.filter(n => n.pinned);
+    else if (activeFilter === 'images') f = f.filter(n => n.images && n.images.length > 0);
+    else if (activeFilter !== 'all' && customTags.includes(activeFilter)) { f = f.filter(n => n.tags && n.tags.includes(activeFilter)); }
+    return f.sort((a, b) => b.time - a.time);
+  }
+
+  function renderList() {
+    const f = filtered();
+    if (!f.length) { noteList.innerHTML = `<div class="empty-list">${t('noNotes')}</div>`; return; }
+    noteList.innerHTML = f.map(n => `<div class="note-row${n.id === currentId ? ' active' : ''}" data-id="${n.id}">
+      <div class="note-avatar">${avatarHTML(n.id, n.text, n.images)}</div>
+      <div class="note-body"><div class="note-title">${esc(getTitle(n.text))}</div><div class="note-preview">${esc(getPreview(n.text) || (n.images&&n.images.length ? `📷 ${n.images.length}장의 이미지` : ''))}</div></div>
+      <div class="note-meta"><span class="note-time">${fmtTime(n.time)}</span><button class="note-delete" data-del="${n.id}">✕</button></div>
+    </div>`).join('');
+  }
+
+  function openNote(id) {
+    const n = notes.find(x => x.id === id); if (!n) return;
+    currentId = id; editor.value = n.text || ''; editorTime.textContent = fmtTime(n.time);
+    currentImages = n.images ? [...n.images] : [];
+    emptyPanel.style.display = 'none'; panelContent.style.display = 'flex';
+    if (window.innerWidth < 720) { mainPanel.classList.remove('mobile-closing'); mainPanel.classList.add('mobile-open'); }
+    renderImageGallery(); renderList(); renderTagChips(); editor.focus();
+  }
+  function openNew() {
+    currentId = null; editor.value = ''; editorTime.textContent = ''; currentImages = [];
+    emptyPanel.style.display = 'none'; panelContent.style.display = 'flex';
+    if (window.innerWidth < 720) { mainPanel.classList.remove('mobile-closing'); mainPanel.classList.add('mobile-open'); }
+    renderImageGallery(); renderList(); renderTagChips(); editor.focus();
+  }
+  function closeEditor() {
+    clearTimeout(autoTimer); saveCurrent();
+    if (window.innerWidth < 720) { mainPanel.classList.add('mobile-closing'); mainPanel.classList.remove('mobile-open'); setTimeout(() => { mainPanel.classList.remove('mobile-closing'); currentId = null; editor.value = ''; editorTime.textContent = ''; currentImages = []; emptyPanel.style.display = 'flex'; panelContent.style.display = 'none'; renderImageGallery(); renderList(); renderTagChips(); }, 250); }
+    else { currentId = null; editor.value = ''; editorTime.textContent = ''; currentImages = []; emptyPanel.style.display = 'flex'; panelContent.style.display = 'none'; renderImageGallery(); renderList(); renderTagChips(); }
+  }
+  function saveCurrent() {
+    const text = editor.value.trim();
+    if (!text && !currentImages.length) { if (currentId) { notes = notes.filter(n => n.id !== currentId); saveCloud(); } return; }
+    if (currentId) { const n = notes.find(x => x.id === currentId); if (n) { n.text = text; n.time = Date.now(); n.images = [...currentImages]; } }
+    else { const nn = { id: 'n' + Date.now(), text, time: Date.now(), pinned: false, tags: [], images: [...currentImages] }; notes.push(nn); currentId = nn.id; }
+    saveCloud(); editorTime.textContent = fmtTime(Date.now()); renderTagChips();
+  }
+  function saveCurrentSilent() { const text = editor.value.trim(); if (currentId) { const n = notes.find(x => x.id === currentId); if (n) { n.text = text; n.time = Date.now(); n.images = [...currentImages]; } } saveCloud(false); }
+  function autoSave() { clearTimeout(autoTimer); if (editor.value.trim() || currentImages.length) autoTimer = setTimeout(() => { saveCurrent(); renderList(); }, 1200); }
+  function delCurrent() { if (!currentId) return; if (confirm(t('deleteConfirm'))) { notes = notes.filter(n => n.id !== currentId); saveCloud(); closeEditor(); } }
+  function shareCurrent() { const text = editor.value.trim(); if (!text && !currentImages.length) { showToast(t('noShare')); return; } const shareText = text || '이미지 문서'; const ku = `kakaolink://send?text=${encodeURIComponent(shareText)}`; const s = Date.now(); window.location.href = ku; setTimeout(() => { if (Date.now() - s < 1500) return; if (navigator.share) navigator.share({ title: t('memo'), text: shareText }).catch(() => copyFallback(shareText)); else copyFallback(shareText); }, 800); }
+  function copyFallback(text) { navigator.clipboard.writeText(text).then(() => showToast(t('copyToast'))).catch(() => showToast(t('shareFail'))); }
+
+  function exportToKakaoTalk() {
+    const text = notes.sort((a,b)=>b.time-a.time).map(n => { const d = new Date(n.time); const ts = `${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; return `[${ts}] ${n.text}${n.tags&&n.tags.length ? ' #'+n.tags.join(' #') : ''}${n.images&&n.images.length ? ` [이미지 ${n.images.length}장]` : ''}`; }).join('\n\n---\n\n');
+    const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+    const file = new File([blob], `ants_docs_${refCode}.txt`, {type:'text/plain'});
+    if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) { navigator.share({files:[file], title:"Ant's Docs"}).then(()=>showToast(t('exported'))).catch(()=>copyFallback(text)); }
+    else { const ku = `kakaolink://send?text=${encodeURIComponent(text.substring(0,500))}`; const s = Date.now(); window.location.href = ku; setTimeout(()=>{ if(Date.now()-s<1500) return; const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=`ants_docs_${refCode}.txt`; a.click(); URL.revokeObjectURL(url); showToast(t('exported')); },800); }
+  }
+
+  function importJSON(file) { const reader = new FileReader(); reader.onload = e => { try { const d = JSON.parse(e.target.result); if (Array.isArray(d) && d.every(x => x.id && x.text !== undefined && x.time)) { notes = d; saveCloud(); renderAll(); showToast(t('imported')); } else showToast('Invalid'); } catch { showToast('Invalid JSON'); } }; reader.readAsText(file); }
+  function renderAll() { renderList(); applyUI(); if (currentId) { const n = notes.find(x => x.id === currentId); if (n) { editor.value = n.text || ''; currentImages = n.images ? [...n.images] : []; editorTime.textContent = fmtTime(n.time); emptyPanel.style.display = 'none'; panelContent.style.display = 'flex'; renderImageGallery(); } else closeEditor(); } else { emptyPanel.style.display = 'flex'; panelContent.style.display = 'none'; } }
+
+  imageGallery.addEventListener('click', e => {
+    const removeBtn = e.target.closest('.remove-img');
+    if (removeBtn) { const idx = parseInt(removeBtn.dataset.index); currentImages.splice(idx, 1); renderImageGallery(); saveCurrentSilent(); showToast(t('imageRemoved')); return; }
+    const img = e.target.closest('img');
+    if (img) { lightboxImg.src = img.src; lightbox.classList.add('open'); }
+  });
+  lightboxClose.addEventListener('click', () => lightbox.classList.remove('open'));
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.classList.remove('open'); });
+  imageUploadBtn.addEventListener('click', () => imageFileInput.click());
+  imageFileInput.addEventListener('change', e => { if (e.target.files.length) handleImageUpload(e.target.files); imageFileInput.value = ''; });
+
+  addTagToNoteBtn.addEventListener('click', () => { if (!currentId) { showToast('먼저 문서를 선택하세요'); return; } const tagName = prompt(t('addTagToNote')); if (tagName && tagName.trim()) { const note = notes.find(n => n.id === currentId); if (note) { if (!note.tags) note.tags = []; if (!note.tags.includes(tagName.trim())) { note.tags.push(tagName.trim()); if (!customTags.includes(tagName.trim())) { customTags.push(tagName.trim()); } saveCloud(); renderTagChips(); renderFilterTabs(); } } } });
+  tagChipsContainer.addEventListener('click', e => { const removeBtn = e.target.closest('.remove-tag'); if (removeBtn && currentId) { const tag = removeBtn.dataset.tag; const note = notes.find(n => n.id === currentId); if (note && note.tags) { note.tags = note.tags.filter(t => t !== tag); saveCloud(); renderTagChips(); renderFilterTabs(); renderList(); } } });
+  filterTabsContainer.addEventListener('click', e => {
+    const tab = e.target.closest('.filter-tab'); if (!tab) return;
+    const deleteBtn = e.target.closest('.delete-filter');
+    if (deleteBtn) { e.stopPropagation(); const tag = deleteBtn.dataset.tag; customTags = customTags.filter(t => t !== tag); notes.forEach(n => { if (n.tags) n.tags = n.tags.filter(t => t !== tag); }); if (activeFilter === tag) activeFilter = 'all'; saveCloud(); renderFilterTabs(); document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active')); const allTab = filterTabsContainer.querySelector('[data-filter="all"]'); if (allTab) allTab.classList.add('active'); renderList(); renderTagChips(); return; }
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); activeFilter = tab.dataset.filter; renderList();
+  });
+  addFilterBtn.addEventListener('click', () => { const name = prompt(t('addTag')); if (name && name.trim() && !customTags.includes(name.trim()) && name.trim() !== 'all' && name.trim() !== 'pinned' && name.trim() !== 'images') { customTags.push(name.trim()); saveCloud(); renderFilterTabs(); } });
+
+  noteList.addEventListener('click', e => { const del = e.target.closest('[data-del]'); if (del) { e.stopPropagation(); notes = notes.filter(n => n.id !== del.dataset.del); saveCloud(); renderAll(); return; } const row = e.target.closest('.note-row'); if (row) openNote(row.dataset.id); });
+  searchInput.addEventListener('input', renderList);
+  newNoteBtn.addEventListener('click', openNew);
+  backBtn.addEventListener('click', closeEditor);
+  saveBtn.addEventListener('click', () => { saveCurrent(); renderList(); showToast(t('savedToast')); });
+  deleteBtn.addEventListener('click', delCurrent);
+  shareBtn.addEventListener('click', shareCurrent);
+  editor.addEventListener('input', autoSave);
+  editor.addEventListener('blur', () => { clearTimeout(autoTimer); saveCurrent(); renderList(); });
+  settingsBtn.addEventListener('click', () => { refCodeDisplay.textContent = refCode; settingsOverlay.classList.add('open'); });
+  closeSettings.addEventListener('click', () => settingsOverlay.classList.remove('open'));
+  settingsOverlay.addEventListener('click', e => { if (e.target === settingsOverlay) settingsOverlay.classList.remove('open'); });
+  themeToggle.addEventListener('click', e => { const b = e.target.closest('.toggle-btn'); if (!b) return; settings.theme = b.dataset.theme; saveSettings(); applyUI(); });
+  langToggle.addEventListener('click', e => { const b = e.target.closest('.toggle-btn'); if (!b) return; settings.lang = b.dataset.lang; saveSettings(); applyUI(); renderAll(); });
+  exportBtn.addEventListener('click', exportToKakaoTalk);
+  importBtn.addEventListener('click', () => importFile.click());
+  importFile.addEventListener('change', e => { if (e.target.files[0]) importJSON(e.target.files[0]); importFile.value = ''; });
+  window.addEventListener('resize', () => { if (window.innerWidth >= 720) { mainPanel.classList.remove('mobile-open','mobile-closing'); if (currentId) { emptyPanel.style.display = 'none'; panelContent.style.display = 'flex'; } } });
+
+  const panelContentEl = document.getElementById('panelContent');
+  panelContentEl.addEventListener('dragover', e => { e.preventDefault(); });
+  panelContentEl.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files.length) handleImageUpload(e.dataTransfer.files); });
+
+  loadSettings(); loadTags();
+  const savedRef = localStorage.getItem(REFK);
+  if (savedRef && loadCloud(savedRef)) { refCode = savedRef; } else { refCode = genRef(); notes = []; saveCloud(false); localStorage.setItem(REFK, refCode); }
+  applyUI(); renderAll();
+})();
+</script>
+</body>
+</html>
